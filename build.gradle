@@ -1,0 +1,70 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.10'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'se.digg.eudiw'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
+	//implementation 'io.micronaut.serde:micronaut-serde-processor:2.5.1'
+	// annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+// https://mvnrepository.com/artifact/io.micronaut.serde/micronaut-serde-jackson
+	//runtimeOnly 'io.micronaut.serde:micronaut-serde-jackson:2.5.1'
+
+	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+	implementation 'commons-io:commons-io:2.15.1'
+	implementation 'com.nimbusds:oauth2-oidc-sdk:11.8'
+	implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
+	//implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'com.google.zxing:core:3.4.1'
+	implementation 'com.google.zxing:javase:3.4.1'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	
+	compileOnly 'org.projectlombok:lombok:1.18.30'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+	
+	testCompileOnly 'org.projectlombok:lombok:1.18.30'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+}
+
+tasks.named('bootBuildImage') {
+	builder = 'paketobuildpacks/builder-jammy-tiny:latest'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+tasks.withType(Jar) {
+    archiveVersion = ''
+    archiveFileName = archiveClassifier.get().isEmpty() ? 
+        "eudiw-prototype-issuer.jar" : 
+        "eudiw-prototype-issuer-${archiveClassifier.get()}.jar"
+}
