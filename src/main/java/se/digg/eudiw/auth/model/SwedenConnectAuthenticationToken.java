@@ -1,12 +1,10 @@
 package se.digg.eudiw.auth.model;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityCoreVersion;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.util.Assert;
 
 import se.swedenconnect.auth.commons.dto.ClientAuthResponse;

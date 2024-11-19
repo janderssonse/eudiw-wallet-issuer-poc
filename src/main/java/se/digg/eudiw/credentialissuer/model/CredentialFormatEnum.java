@@ -1,6 +1,7 @@
 package se.digg.eudiw.credentialissuer.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Arrays;
 
 public enum CredentialFormatEnum {
 
@@ -20,12 +21,10 @@ public enum CredentialFormatEnum {
     }
 
     public static CredentialFormatEnum fromString(String format) {
-        for (CredentialFormatEnum b : CredentialFormatEnum.values()) {
-            if (b.format.equalsIgnoreCase(format)) {
-                return b;
-            }
-        }
-        return null;
+        return Arrays.stream(values())
+                .filter(credFormat -> credFormat.format.equalsIgnoreCase(format))
+                .findFirst()
+                .orElse(null);
     }
 
     public static CredentialFormatEnum fromStringOrDefault(String format) {

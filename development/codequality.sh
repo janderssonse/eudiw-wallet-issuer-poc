@@ -20,8 +20,8 @@ readonly CHECKMARK=$'\xE2\x9C\x94'
 readonly MISSING=$'\xE2\x9D\x8C'
 
 #MAVEN OPTS
-
-readonly MAVEN_CLI_OPTS=(--batch-mode --no-transfer-progress --errors --fail-at-end -Dstyle.color=always -DinstallAtEnd=true -DdeployAtEnd=true)
+# TODO Gradle vers
+# readonly MAVEN_CLI_OPTS=(--batch-mode --no-transfer-progress --errors --fail-at-end -Dstyle.color=always -DinstallAtEnd=true -DdeployAtEnd=true)
 
 is_command_available() {
   local COMMAND="${1}"

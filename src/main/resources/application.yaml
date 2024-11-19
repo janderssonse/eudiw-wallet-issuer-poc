@@ -3,8 +3,8 @@ server:
   use-forward-headers: true
   forward-headers-strategy: NATIVE
   #ssl:
-  #  certificate: /Users/bjorn/.config/devcerts/wallet-cert.pem
-  #  certificate-private-key: /Users/bjorn/.config/devcerts/wallet-key.pem
+  #  certificate: ${HOME}/.config/devcerts/wallet-cert.pem
+  #  certificate-private-key: ${HOME}/.config/devcerts/wallet-key.pem
   servlet:
     session:
       cookie:

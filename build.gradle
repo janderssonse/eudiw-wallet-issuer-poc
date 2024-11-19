@@ -65,6 +65,6 @@ tasks.named('test') {
 tasks.withType(Jar) {
     archiveVersion = ''
     archiveFileName = archiveClassifier.get().isEmpty() ? 
-        "eudiw-prototype-issuer.jar" : 
-        "eudiw-prototype-issuer-${archiveClassifier.get()}.jar"
+        "eudiw-wallet-issuer-poc.jar" : 
+        "eudiw-wallet-issuer-poc-${archiveClassifier.get()}.jar"
 }
