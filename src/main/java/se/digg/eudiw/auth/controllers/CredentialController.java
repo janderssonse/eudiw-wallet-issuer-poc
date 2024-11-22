@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import org.springframework.web.client.RestTemplate;
+import se.digg.eudiw.ApiClient;
 import se.digg.eudiw.auth.config.EudiwConfig;
+import se.digg.eudiw.client.DefaultApi;
 import se.digg.eudiw.credentialissuer.model.Address;
 import se.digg.eudiw.credentialissuer.model.CredentialIssuerMetadata;
 import se.digg.eudiw.credentialissuer.model.CredentialOfferParam;
@@ -28,6 +31,22 @@ public class CredentialController {
 
 	@Autowired
 	private EudiwConfig eudiwConfig;
+
+	@Autowired
+	private RestTemplate restTemplate;
+
+	@GetMapping("/demo-oidfed-client")
+	String oidfedClientDemo() {
+		ApiClient client = new ApiClient(restTemplate);
+		client.setBasePath(eudiwConfig.getOidFederationBaseUrl());
+		DefaultApi api = new DefaultApi(client);
+		return api.nameResolveGet(
+				"wallet-provider",
+				"https://local.dev.swedenconnect.se/wallets/1234567890",
+				"https://local.dev.swedenconnect.se:9040/oidfed/wallet-provider",
+				null);
+	}
+
 
 	@GetMapping("/demo-credential")
 	String demoCredential() {

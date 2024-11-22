@@ -27,6 +27,8 @@ public class EudiwConfig {
 
     private List<String> redirectUris;
 
+    private String oidFederationBaseUrl;
+
     public String getAuthHost() {
         return authHost;
     }
@@ -103,5 +105,13 @@ public class EudiwConfig {
                 ", expHours=" + expHours +
                 ", clientId='" + clientId + '\'' +
                 '}';
+    }
+
+    public String getOidFederationBaseUrl() {
+        return oidFederationBaseUrl;
+    }
+
+    public void setOidFederationBaseUrl(String oidFederationBaseUrl) {
+        this.oidFederationBaseUrl = oidFederationBaseUrl;
     }
 }
