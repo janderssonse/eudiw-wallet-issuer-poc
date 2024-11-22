@@ -22,7 +22,7 @@ eudiw:
   expHours: 24
   clientId: eudiw-client
   oidFederationBaseUrl:  https://local.dev.swedenconnect.se:9040/oidfed
-
+  issuerSignerKeyPemFile: issuer-jwt-ec256-key-pair.pem
   redirectUris:
     - "https://wallet-dev.eudiw.se:9443/callback-test-1-authorisation-flow"
     - "http://wallet-dev.eudiw.se:9443"
@@ -35,3 +35,4 @@ eudiw:
   token-issuer-cert:
     - cert-location: classpath:dev/tokenSigner.crt
       kid: tokenSigner-1
+
