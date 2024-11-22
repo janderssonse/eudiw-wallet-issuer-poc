@@ -9,8 +9,6 @@ This a PoC test library, and is currently under development. It should not be us
 
 ## Preparations
 
-Do the mkcert config and /etc/hosts config in [quick-start](../dev-environment/compose/quick-start.md)
-
 Install jdk21
 
 ## Signer certificate
