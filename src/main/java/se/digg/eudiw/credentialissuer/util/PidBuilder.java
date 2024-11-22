@@ -16,9 +16,7 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.Payload;
-import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.RSAKey;
 
 import se.digg.eudiw.auth.config.SignerConfig;
 import se.digg.eudiw.credentialissuer.model.SelectiveDisclosure;

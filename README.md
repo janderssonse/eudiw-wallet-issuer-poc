@@ -15,20 +15,20 @@ Install jdk21
 
 ## Signer certificate
 
-JWTs are signed with a private key. 
+JWTs are signed with a private key.
 
 Generate key
 ```shell
 openssl ecparam -genkey -name prime256v1 -noout -out issuer-jwt-ec256-key-pair.pem
 ```
 
-Export public key 
-```
+Export public key
+```shell
 openssl ec -in issuer-jwt-ec256-key-pair.pem -pubout -out issuer-jwt-ec256-public-key.pem
 ```
 
 Make sure application.properties in the active profile has proper key pair config
-```
+```shell
 eudiw.issuerSignerKeyPemFile: issuer-jwt-ec256-key-pair.pem
 ```
 or set it with environment variable `EUDIW_ISSUER_SIGNER_KEY_PEM_FILE=issuer-jwt-ec256-key-pair.pem`
@@ -37,7 +37,7 @@ or set it with environment variable `EUDIW_ISSUER_SIGNER_KEY_PEM_FILE=issuer-jwt
 
 ### command line
 
-```
+```shell
 SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 ```
 
@@ -48,7 +48,7 @@ Run as gradle project. Add the variable `SPRING_PROFILES_ACTIVE=dev` in the run/
 ### docker-compose
 
 See [quick-start](../dev-environment/compose/quick-start.md)
-```
+```shell
 cd dev-environment/compose
 docker-compose --profile ewc up
 ```

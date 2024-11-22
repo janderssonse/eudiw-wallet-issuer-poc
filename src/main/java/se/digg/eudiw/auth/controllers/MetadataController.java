@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import se.digg.eudiw.auth.config.EudiwConfig;
 import se.digg.eudiw.auth.config.SignerConfig;
-import se.digg.wallet.metadata.*;
 import se.oidc.oidfed.base.data.federation.EntityStatement;
 import se.oidc.oidfed.base.data.federation.EntityStatementDefinedParams;
 
