@@ -20,9 +20,15 @@ Generate key
 openssl ecparam -genkey -name prime256v1 -noout -out issuer-jwt-ec256-key-pair.pem
 ```
 
-Export public key
+Generate corresponding public key
 ```shell
 openssl ec -in issuer-jwt-ec256-key-pair.pem -pubout -out issuer-jwt-ec256-public-key.pem
+```
+
+Self signed certificate public key
+```shell
+openssl req -new -x509 -key issuer-jwt-ec256-key-pair.pem -out issuer-jwt-ec256-public-key.crt -days 360
+
 ```
 
 Make sure application.properties in the active profile has proper key pair config
