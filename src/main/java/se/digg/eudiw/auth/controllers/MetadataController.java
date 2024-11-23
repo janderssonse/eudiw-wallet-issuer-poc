@@ -13,11 +13,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import se.digg.eudiw.auth.config.EudiwConfig;
 import se.digg.eudiw.auth.config.SignerConfig;
 import se.digg.wallet.metadata.*;
+import se.oidc.oidfed.base.data.federation.EntityMetadataInfoClaim;
 import se.oidc.oidfed.base.data.federation.EntityStatement;
 import se.oidc.oidfed.base.data.federation.EntityStatementDefinedParams;
 
@@ -33,6 +36,11 @@ public class MetadataController {
     public MetadataController(@Autowired EudiwConfig eudiwConfig, @Autowired SignerConfig signer) {
         this.signer = signer;
         this.eudiwConfig = eudiwConfig;
+    }
+
+    @GetMapping("/.well-known/jwks.json")
+    Map<String, Object> jwks() {
+        return new JWKSet(signer.getPublicJwk()).toJSONObject();
     }
 
     @GetMapping("/.well-known/openid-credential-issuer")
@@ -123,9 +131,13 @@ public class MetadataController {
             final EntityStatementDefinedParams.EntityStatementDefinedParamsBuilder paramsBuilder =
                     EntityStatementDefinedParams.builder()
                     .jwkSet(new JWKSet(signer.getPublicJwk()))
+                    .metadata(EntityMetadataInfoClaim.builder()
+                            //.authorizationServerMetadataObject(Map.of("foo","bar"))
+                            .federationEntityMetadataObject(Map.of("organization_name", "DIGG"))
+                            .build())
                     //.trustMarks(CollectionUtils.isEmpty(trustMarkClaims) ? null : trustMarkClaims)
                     //.authorityHints(this.entityProperties.getAuthorityHints())
-                    //.metadata(this.getMetadata())
+
                     //.sourceEndpoint(this.getEntityIdentifier() + ENTITY_CONFIGURATION_PATH)
                     //.trustMarkIssuers(this.getTrustMarkIssuers(this.entityProperties.getTrustMarkIssuers()))
                     //.trustMarkOwners(this.getTrustMarkOwners(this.entityProperties.getTrustMarkOwners()))

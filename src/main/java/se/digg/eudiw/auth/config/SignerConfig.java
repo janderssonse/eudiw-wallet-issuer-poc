@@ -3,6 +3,7 @@ package se.digg.eudiw.auth.config;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import lombok.Getter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -39,11 +40,12 @@ public class SignerConfig {
 
             // Parse the EC key file
             String pemKey = new String(Files.readAllBytes(Paths.get(eudiwConfig.getIssuerSignerKeyPemFile())));
-            jwk = JWK.parseFromPEMEncodedObjects(pemKey);
+            JWK parsedJwk = JWK.parseFromPEMEncodedObjects(pemKey);
+            ECKey ecKey = parsedJwk.toECKey();
+            ECPrivateKey privateKey = ecKey.toECPrivateKey();
+            ECPublicKey publicKey = ecKey.toECPublicKey();
 
-            ECPrivateKey privateKey = jwk.toECKey().toECPrivateKey();
-            ECPublicKey publicKey = jwk.toECKey().toECPublicKey();
-
+            jwk = new ECKey.Builder(ecKey).keyIDFromThumbprint().build();
             jwsSigner = new ECDSASigner(privateKey);
             jwsVerifier = new ECDSAVerifier(publicKey);
 
