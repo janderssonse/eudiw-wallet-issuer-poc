@@ -104,7 +104,8 @@ public class PidBuilder {
         return this;
     }
 
-    public PidBuilder withCnf(Map<String, String> cnf) {
+    // Todo cnf builder
+    public PidBuilder withCnf(Map<String, Object> cnf) {
         payload.put("cnf", cnf);
         return this;
     }

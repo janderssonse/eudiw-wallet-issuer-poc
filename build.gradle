@@ -31,7 +31,6 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
-	//implementation 'io.micronaut.serde:micronaut-serde-processor:2.5.1'
 	// annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
 // https://mvnrepository.com/artifact/io.micronaut.serde/micronaut-serde-jackson
 	//runtimeOnly 'io.micronaut.serde:micronaut-serde-jackson:2.5.1'
@@ -48,7 +47,6 @@ dependencies {
 	implementation 'org.bouncycastle:bcprov-jdk18on:1.79'
 	implementation 'jakarta.annotation:jakarta.annotation-api:3.0.0'
 	implementation 'se.digg.wallet:wallet-metadata:1.0.0-SNAPSHOT'
-
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'

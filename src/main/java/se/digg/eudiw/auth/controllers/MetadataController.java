@@ -19,21 +19,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import se.digg.eudiw.auth.config.EudiwConfig;
 import se.digg.eudiw.auth.config.SignerConfig;
+import se.digg.eudiw.auth.service.OpenIdFederationService;
 import se.digg.wallet.metadata.*;
+import se.oidc.oidfed.base.data.LanguageObject;
 import se.oidc.oidfed.base.data.federation.EntityMetadataInfoClaim;
 import se.oidc.oidfed.base.data.federation.EntityStatement;
 import se.oidc.oidfed.base.data.federation.EntityStatementDefinedParams;
+import se.oidc.oidfed.base.data.federation.TrustMarkClaim;
+import se.oidc.oidfed.base.data.metadata.FederationEntityMetadata;
 
 @RestController
 public class MetadataController {
 
 
+    private final OpenIdFederationService openIdFederationService;
     private final SignerConfig signer;
     private final EudiwConfig eudiwConfig;
 
     Logger logger = LoggerFactory.getLogger(MetadataController.class);
 
-    public MetadataController(@Autowired EudiwConfig eudiwConfig, @Autowired SignerConfig signer) {
+    public MetadataController(@Autowired EudiwConfig eudiwConfig, @Autowired OpenIdFederationService openIdFederationService, @Autowired SignerConfig signer) {
+        this.openIdFederationService = openIdFederationService;
         this.signer = signer;
         this.eudiwConfig = eudiwConfig;
     }
@@ -51,12 +57,7 @@ public class MetadataController {
                 .credentialEndpoint(String.format("%s/credential", eudiwConfig.getCredentialHost()))
                 .deferredCredentialEndpoint(String.format("%s/credential_deferred", eudiwConfig.getCredentialHost()))
                 .notificationEndpoint(String.format("%s/notification", eudiwConfig.getCredentialHost()))
-                .credentialResponseEncryption(CredentialResponseEncryption.builder()
-                        .algValuesSupported(List.of("RS256", "ES256"))
-                        .encValuesSupported(List.of("algo1", "algo2"))
-                        .encryptionRequired(false)
-                        .build())
-                .batchCredentialIssuance(new BatchCredentialIssuance(100))
+                //.batchCredentialIssuance(new BatchCredentialIssuance(100))
                 .signedMetadata("signed_metadata_jwt")
                 .display(Display.builder()
                         .name("Credential Issuer Name")
@@ -68,13 +69,10 @@ public class MetadataController {
                         .scope("VerifiablePortableDocumentA1")
                         .cryptographicBindingMethodsSupported(List.of("jwk"))
                         .credentialSigningAlgValuesSupported(List.of("ES256"))
-                        //.proofType("jwt", new AbstractCredentialConfiguration.ProofType(List.of("ES256")))
+                        .proofType("jwt", new SdJwtCredentialConfiguration.ProofType(List.of("ES256")))
                         .display(List.of(
                                 Display.builder()
-                                        .name("Portable Document A1")
-                                        .locale("en")
-                                        .backgroundColor("##12107c")
-                                        .textColor("#FFFFFF")
+                                        .name("DIGG PID Issuer")
                                         .build()))
                         .vct("VerifiablePortableDocumentA1")
                         .claim("given_name", Claim.builder()
@@ -128,27 +126,32 @@ public class MetadataController {
         expCalendar.add(Calendar.HOUR_OF_DAY, 24); // todo config
 
         try {
-            final EntityStatementDefinedParams.EntityStatementDefinedParamsBuilder paramsBuilder =
+            final EntityStatementDefinedParams definedParams =
                     EntityStatementDefinedParams.builder()
                     .jwkSet(new JWKSet(signer.getPublicJwk()))
-                    .metadata(EntityMetadataInfoClaim.builder()
-                            //.authorizationServerMetadataObject(Map.of("foo","bar"))
-                            .federationEntityMetadataObject(Map.of("organization_name", "DIGG"))
-                            .build())
-                    //.trustMarks(CollectionUtils.isEmpty(trustMarkClaims) ? null : trustMarkClaims)
-                    //.authorityHints(this.entityProperties.getAuthorityHints())
-
-                    //.sourceEndpoint(this.getEntityIdentifier() + ENTITY_CONFIGURATION_PATH)
-                    //.trustMarkIssuers(this.getTrustMarkIssuers(this.entityProperties.getTrustMarkIssuers()))
-                    //.trustMarkOwners(this.getTrustMarkOwners(this.entityProperties.getTrustMarkOwners()))
-                    ;
+                    .metadata(
+                            EntityMetadataInfoClaim.builder()
+                            .federationEntityMetadataObject(
+                                    FederationEntityMetadata.builder()
+                                            .organizationName(LanguageObject.builder(String.class).defaultValue("DIGG").build())
+                                            .build().toJsonObject())
+                                    .customEntityMetadataObject("openid_credential_issuer", metadata().toJsonObject())
+                                    .build()
+                    )
+                            .sourceEndpoint(String.format("%s/%s", eudiwConfig.getIssuerBaseUrl(), ".well-known/openid-federation"))
+                            .authorityHints(List.of("https://local.dev.swedenconnect.se:9040/oidfed/intermediate"))
+                            .trustMarks(List.of(TrustMarkClaim.builder()
+                                            .id(eudiwConfig.getOpenidFederation().trustMarkId())
+                                            .trustMark(openIdFederationService.trustMark(eudiwConfig.getOpenidFederation().trustMarkId(), eudiwConfig.getOpenidFederation().subject()))
+                                    .build()))
+                            .build();
 
             String jwt = EntityStatement.builder()
                     .issuer(eudiwConfig.getIssuer())
                     .subject(eudiwConfig.getIssuer())
                     .issueTime(issCalendar.getTime())
                     .expriationTime(expCalendar.getTime())
-                    .definedParams(paramsBuilder.build())
+                    .definedParams(definedParams)
                     .build(signer.getJwtSigningCredential(), null).getSignedJWT().serialize();
 
             return ResponseEntity.ok().body(jwt);

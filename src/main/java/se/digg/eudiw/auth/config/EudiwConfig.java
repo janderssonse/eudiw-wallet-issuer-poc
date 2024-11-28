@@ -11,6 +11,9 @@ import java.util.List;
 @Component 
 public class EudiwConfig {
 
+    public record OpenIdFederationConfiguration(String baseUrl, String trustMarkId, String subject, Integer trustListTtlInSeconds) {
+    }
+
     private String authHost;
 
     private String callbackUrl;
@@ -27,7 +30,7 @@ public class EudiwConfig {
 
     private List<String> redirectUris;
 
-    private String oidFederationBaseUrl;
+    private OpenIdFederationConfiguration openidFederation;
 
     private String issuerSignerKeyPemFile;
 
@@ -96,12 +99,12 @@ public class EudiwConfig {
         this.redirectUris = redirectUris;
     }
 
-    public String getOidFederationBaseUrl() {
-        return oidFederationBaseUrl;
+    public OpenIdFederationConfiguration getOpenidFederation() {
+        return openidFederation;
     }
 
-    public void setOidFederationBaseUrl(String oidFederationBaseUrl) {
-        this.oidFederationBaseUrl = oidFederationBaseUrl;
+    public void setOpenidFederation(OpenIdFederationConfiguration oidFederation) {
+        this.openidFederation = oidFederation;
     }
 
     public String getIssuerSignerKeyPemFile() {
@@ -123,7 +126,7 @@ public class EudiwConfig {
                 ", expHours=" + expHours +
                 ", clientId='" + clientId + '\'' +
                 ", redirectUris=" + redirectUris +
-                ", oidFederationBaseUrl='" + oidFederationBaseUrl + '\'' +
+                ", oidFederation='" + openidFederation + '\'' +
                 ", issuerSignerKeyPemFile='" + issuerSignerKeyPemFile + '\'' +
                 '}';
     }

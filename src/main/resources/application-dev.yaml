@@ -1,9 +1,7 @@
 server:
-  port: 8443
+  port: 9090
   ssl:
     enabled: true
-    # certificate: ${HOME}/.config/devcerts/wallet-cert.pem
-    # certificate-private-key: ${HOME}/.config/devcerts/wallet-key.pem
     key-store-type: JKS
     key-store: "file:../eudiw-prototype/sc-environment/config/common/tls.jks"
     key-store-password: secret
@@ -18,27 +16,35 @@ spring:
           truststore:
             # certificate path works in local sc-environment if the repos are located side by side
             # otherwise: set the filepath with SPRING_SSL_BUNDLE_PEM_REST_TRUSTSTORE_CERTIFICATE environment variable
-            certificate: file:../eudiw-prototype/sc-environment/config/common/tls.crt
+            certificate: "file:../eudiw-prototype/sc-environment/config/common/tls.crt"
 
 eudiw:
-  issuer: https://local.dev.swedenconnect.se:8443
-  issuerBaseUrl: https://local.dev.swedenconnect.se:8443
-  authHost: https://local.dev.swedenconnect.se:8443
-  credentialHost: https://local.dev.swedenconnect.se:8443
+  issuer: https://local.dev.swedenconnect.se:9090
+  issuerBaseUrl: https://local.dev.swedenconnect.se:9090
+  authHost: https://local.dev.swedenconnect.se:9090
+  credentialHost: https://local.dev.swedenconnect.se:9090
   expHours: 24
   clientId: eudiw-client
-  oidFederationBaseUrl:  https://local.dev.swedenconnect.se:9040/oidfed
-  issuerSignerKeyPemFile: issuer-jwt-ec256-key-pair.pem
-  redirectUris:
-    - "https://local.dev.swedenconnect.se:8443/callback-test-1-authorisation-flow"
-    - "https://local.dev.swedenconnect.se:8443"
+  openidFederation:
+    baseUrl:  https://local.dev.swedenconnect.se:9040/oidfed
+    trustMarkId: https://local.dev.swedenconnect.se/trust-mark-id/pid-issuer
+    subject: https://local.dev.swedenconnect.se:9090
+    trustListTtlInSeconds: 60
 
+  issuerSignerKeyPemFile: "../eudiw-prototype/sc-environment/config/openid-fed/keystores/issuer-jwt-ec256-key-pair.pem"
+  redirectUris:
+    - "https://local.dev.swedenconnect.se:9091/callback-test-1-authorisation-flow"
+    - "https://local.dev.swedenconnect.se:9091"
+    - "https://local.dev.swedenconnect.se:9443/callback-test-1-authorisation-flow"
+    - "https://local.dev.swedenconnect.se:9443"
   swedenconnect:
     base-url: https://local.dev.swedenconnect.se:9060/id-backend/auth
     client: wallet-dev
-    return-base-url: https://local.dev.swedenconnect.se:8443/auth/return
+    return-base-url: https://local.dev.swedenconnect.se:9090/auth/return
 
   token-issuer-cert:
     - cert-location: classpath:dev/tokenSigner.crt
       kid: tokenSigner-1
+    - cert-location: file:../eudiw-prototype/sc-environment/config/openid-fed/keystores/wp-certificate.crt
+      kid: wp-1
 

@@ -201,7 +201,7 @@ public class PreAuthController {
 
         // Make the token request, with PKCE
         TokenRequest tokenRequest = new TokenRequest(
-            URI.create("https://wallet-dev.eudiw.se:8443/oauth2/token"),
+            URI.create("https://local.dev.swedenconnect.se:9090/oauth2/token"),
             new ClientID(eudiwConfig.getClientId()),
             new AuthorizationCodeGrant(authorizationCode, callbackUri, pkceVerifier));
 

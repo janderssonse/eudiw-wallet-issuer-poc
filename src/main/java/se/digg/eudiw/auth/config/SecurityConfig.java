@@ -42,6 +42,19 @@ public class SecurityConfig {
         private String kid;
     }
 
+    @Bean List<TokenCredential> tokenCredentials(SecurityConfig trustConfig) throws IOException, CertificateException {
+        List<TokenCredential> tokenCredentialList = new ArrayList<>();
+        List<SecurityConfig.TrustedCert> certList = trustConfig.getTokenIssuerCert();
+        if (certList != null) {
+            for (SecurityConfig.TrustedCert cert : certList) {
+                X509Certificate x5c = (X509Certificate) certificateFactory
+                        .generateCertificate(cert.getCertLocation().getInputStream());
+                tokenCredentialList.add(new TokenCredential(x5c, cert.getKid()));
+            }
+        }
+        return tokenCredentialList;
+    }
+
     @Bean IdTokenValidator idTokenValidator(SecurityConfig trustConfig)
     throws IOException, CertificateException {
     List<TokenCredential> tokenCredentialList = new ArrayList<>();

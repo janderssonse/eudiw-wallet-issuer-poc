@@ -3,6 +3,7 @@ package se.digg.eudiw.auth;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import se.digg.eudiw.auth.model.AuthReturnPayload;
 import se.digg.eudiw.auth.model.CustomUserDetails;
 import se.digg.eudiw.auth.model.SwedenConnectAuthenticationToken;
@@ -37,6 +38,7 @@ import se.swedenconnect.auth.commons.idtoken.SubjAttributes;
 		SwedenConnectPrincipal.class
 	}
 )
+@ComponentScan
 public class IssuerApplication {
 
  	public static void main(String[] args) {
