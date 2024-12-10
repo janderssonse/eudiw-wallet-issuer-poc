@@ -18,7 +18,7 @@ import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.jwk.JWK;
 
-import se.digg.eudiw.auth.config.SignerConfig;
+import se.digg.eudiw.config.SignerConfig;
 import se.digg.eudiw.credentialissuer.model.SelectiveDisclosure;
 
 public class PidBuilder {

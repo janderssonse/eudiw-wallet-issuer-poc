@@ -48,6 +48,7 @@ public class IdTokenValidator {
 
   public SignedJWT validateIdToken(String idToken) throws IdTokenValidationException {
     SignedJWT signedJWT = null;
+    // TODO config id proxy public key for validation
     try {
       signedJWT = SignedJWT.parse(idToken);
       JWSVerifier verifier = getVerifier(signedJWT);

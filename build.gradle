@@ -34,6 +34,7 @@ dependencies {
 	// annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
 // https://mvnrepository.com/artifact/io.micronaut.serde/micronaut-serde-jackson
 	//runtimeOnly 'io.micronaut.serde:micronaut-serde-jackson:2.5.1'
+	implementation 'io.projectreactor:reactor-core:3.6.0'
 
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 	implementation 'commons-io:commons-io:2.18.0'

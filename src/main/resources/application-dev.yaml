@@ -7,7 +7,13 @@ server:
     key-store-password: secret
     key-alias: tls
 
+logging:
+  level:
+    org.springframework.security: debug
 
+  error:
+    whitelabel:
+      enabled: false
 spring:
   ssl:
     bundle:
@@ -28,6 +34,7 @@ eudiw:
   openidFederation:
     baseUrl:  https://local.dev.swedenconnect.se:9040/oidfed
     trustMarkId: https://local.dev.swedenconnect.se/trust-mark-id/pid-issuer
+    walletProviderAnchor: https://local.dev.swedenconnect.se:9040/oidfed/wallet-provider
     subject: https://local.dev.swedenconnect.se:9090
     trustListTtlInSeconds: 60
 
