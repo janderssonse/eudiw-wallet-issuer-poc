@@ -81,9 +81,9 @@ public class CredentialController {
 				PidBuilder builder = new PidBuilder(eudiwConfig.getIssuer(), signerConfig)
                         .withExp(eudiwConfig.getExpHours())
                         .withVcType("https://attestations.eudiw.se/se_pid")
-                        .addSelectiveDisclosure("given_name", jwt.getClaim("givenName"))
-                        .addSelectiveDisclosure("last_name", jwt.getClaim("surname"))
-						.addSelectiveDisclosure("birthdate", jwt.getClaim("birthDate"))
+                        .addSelectiveDisclosure("given_name", "FOO" + jwt.getClaim("givenName"))
+                        .addSelectiveDisclosure("last_name", "FOO" + jwt.getClaim("surname"))
+						.addSelectiveDisclosure("birthdate", "FOO" + jwt.getClaim("birthDate"))
                         .addSelectiveDisclosure("address", new Address("123 Main St", "Anytown", "Anystate", "US"));
 
 				jwk.ifPresent(value -> builder.withCnf(Map.of("jwk", value.toPublicJWK().toJSONObject())));

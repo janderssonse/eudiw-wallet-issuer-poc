@@ -140,7 +140,7 @@ public class PidBuilder {
     public String build() {
         StringBuffer sb = new StringBuffer();
 
-        payload.put("_sd", selectiveDisclosures.stream().map(sd -> sd.hash()).collect(Collectors.toList()));
+        payload.put("_sd", selectiveDisclosures.stream().map(SelectiveDisclosure::hash).collect(Collectors.toList()));
 
         JWSObject jwsObject = new JWSObject(
             new JWSHeader.Builder(JWSAlgorithm.ES256)

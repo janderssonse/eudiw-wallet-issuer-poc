@@ -9,8 +9,12 @@ server:
 
 logging:
   level:
-    org.springframework.security: debug
-
+    org:
+      springframework:
+        web:
+          filter:
+            CommonsRequestLoggingFilter: DEBUG
+        security: debug
   error:
     whitelabel:
       enabled: false
@@ -41,8 +45,10 @@ eudiw:
   issuerSignerKeyPemFile: "../eudiw-prototype/sc-environment/config/openid-fed/keystores/issuer-jwt-ec256-key-pair.pem"
   redirectUris:
     - "https://local.dev.swedenconnect.se:9091/callback-test-1-authorisation-flow"
+    - "https://local.dev.swedenconnect.se:9091/callback-test-2-pre-authorisation-flow"
     - "https://local.dev.swedenconnect.se:9091"
     - "https://local.dev.swedenconnect.se:9443/callback-test-1-authorisation-flow"
+    - "https://local.dev.swedenconnect.se:9443/callback-test-2-pre-authorisation-flow"
     - "https://local.dev.swedenconnect.se:9443"
   swedenconnect:
     base-url: https://local.dev.swedenconnect.se:9060/id-backend/auth

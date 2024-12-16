@@ -21,21 +21,27 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.oauth2.core.*;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtClaimValidator;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.authentication.*;
+import org.springframework.security.oauth2.server.authorization.token.*;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.*;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import se.digg.eudiw.authentication.*;
+import se.digg.eudiw.authorization.PreAuthCodeGrantAuthenticationConverter;
+import se.digg.eudiw.authorization.PreAuthCodeGrantAuthenticationProvider;
 import se.digg.eudiw.context.EudiwSessionSecurityContextRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +59,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
@@ -64,8 +69,6 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
-import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
-import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -92,13 +95,16 @@ public class OAuth2ServerConfig {
 
   @Bean
   @Order(2)
-  public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, @Autowired RegisteredClientRepository registeredClientRepository, @Autowired AuthenticationManager authenticationManager) throws Exception {
+  public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, @Autowired RegisteredClientRepository registeredClientRepository, @Autowired AuthenticationManager authenticationManager, @Autowired OAuth2AuthorizationService authorizationService, @Autowired OAuth2TokenGenerator<?> tokenGenerator) throws Exception {
     OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
             OAuth2AuthorizationServerConfigurer.authorizationServer();
 
     http
             .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
-            .authorizeHttpRequests( authorizeHttpRequests -> authorizeHttpRequests.anyRequest().authenticated())
+            .authorizeHttpRequests( authorizeHttpRequests -> authorizeHttpRequests
+                    .requestMatchers("/oauth2/token*").permitAll()
+                    .anyRequest().authenticated()
+            )
             .with(authorizationServerConfigurer, (authorizationServer) ->
                     authorizationServer
                             .registeredClientRepository(registeredClientRepository)
@@ -107,6 +113,11 @@ public class OAuth2ServerConfig {
                                     authorizationEndpoint
                                             .authenticationProvider(authProvider)
                             )
+                            .tokenEndpoint(tokenEndpoint -> tokenEndpoint
+
+                                    .accessTokenRequestConverter(new PreAuthCodeGrantAuthenticationConverter(contextRepository))
+                                    .authenticationProvider(new PreAuthCodeGrantAuthenticationProvider(authorizationService, tokenGenerator, registeredClientRepository)))
+
             )
             .exceptionHandling(exception -> exception
                     // Redirect to the login page when not authenticated
@@ -156,7 +167,7 @@ public class OAuth2ServerConfig {
                                     .requestMatchers("/login*").permitAll()
                                     .requestMatchers("/demo-credential").permitAll()
                                     .requestMatchers("/demo-oidfed-client").authenticated()
-                                    .requestMatchers("/credential").hasAuthority("SCOPE_VerifiablePortableDocumentA1")
+                                    .requestMatchers("/credential").authenticated() //hasAuthority("SCOPE_VerifiablePortableDocumentA1")
                                     .requestMatchers("/credential_offer").hasAuthority("SCOPE_VerifiablePortableDocumentA1")
                                     .anyRequest().authenticated()
             )
@@ -196,7 +207,8 @@ public class OAuth2ServerConfig {
         s.add(ClientAuthenticationMethod.NONE);
       })
       .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-      .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN);
+      .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+            .authorizationGrantType(new AuthorizationGrantType("urn:ietf:params:oauth:grant-type:pre-authorized_code"));
 
 
     registeredClientBuilder = registeredClientBuilder.redirectUri(String.format("%s/login/oauth2/code/messaging-client-pkce", config.getIssuerBaseUrl()))
@@ -239,7 +251,12 @@ public class OAuth2ServerConfig {
   @Bean
   public AuthorizationServerSettings authorizationServerSettings() {
       return AuthorizationServerSettings.builder().issuer(config.getIssuer()).build();
-    }
+  }
+
+  @Bean
+  public OAuth2AuthorizationService authorizationService() {
+    return new InMemoryOAuth2AuthorizationService();
+  }
 
   @Bean
   public JWKSource<SecurityContext> jwkSource() {
@@ -323,5 +340,21 @@ public class OAuth2ServerConfig {
       }
       return keyPair;
     }
+  }
+
+  @Bean
+  public OAuth2TokenGenerator<?> tokenGenerator() {
+    JwtEncoder jwtEncoder = new NimbusJwtEncoder(jwkSource());
+    JwtGenerator jwtGenerator = new JwtGenerator(jwtEncoder);
+    OAuth2AccessTokenGenerator accessTokenGenerator = new OAuth2AccessTokenGenerator();
+    OAuth2RefreshTokenGenerator refreshTokenGenerator = new OAuth2RefreshTokenGenerator();
+    return new DelegatingOAuth2TokenGenerator(
+            jwtGenerator, accessTokenGenerator, refreshTokenGenerator);
+  }
+
+  @Bean
+  public AuthenticationEventPublisher authenticationEventPublisher
+          (ApplicationEventPublisher applicationEventPublisher) {
+    return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
   }
 }

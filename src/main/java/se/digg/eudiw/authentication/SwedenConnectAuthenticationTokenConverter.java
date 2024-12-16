@@ -6,11 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.DeferredSecurityContext;
-import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationConverter;
 import se.digg.eudiw.context.EudiwSessionSecurityContextRepository;
 
-import java.util.function.Function;
 
 public class SwedenConnectAuthenticationTokenConverter implements AuthenticationConverter  {
 

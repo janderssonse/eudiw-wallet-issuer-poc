@@ -70,19 +70,18 @@ public class OpenIdFederationServiceImpl implements OpenIdFederationService {
                 null);
         try {
             SignedJWT signedJwt = parseJwt(oidFedJwt);
-            signedJwt.getJWTClaimsSet().getClaims().entrySet().stream().forEach(claimEntry -> System.out.println("ITEM" + claimEntry.getKey() + "|" + claimEntry.getValue()));
+            //signedJwt.getJWTClaimsSet().getClaims().entrySet().stream().forEach(claimEntry -> System.out.println("ITEM" + claimEntry.getKey() + "|" + claimEntry.getValue()));
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> metadataClaim = (Map<String, Object>) signedJwt.getJWTClaimsSet().getClaim("metadata");
             String metadataClaimJson = objectMapper.writeValueAsString(metadataClaim.get("oauth_client"));
             clientMetadata = objectMapper.readValue(metadataClaimJson, WalletOAuthClientMetadata.class);
-            System.out.println("JWK======>" + clientMetadata.getJwkSet());
         }
         catch (IdTokenValidationException e) {
            // throw new RuntimeException(e);
-            System.out.println("FOOOO!" + e);
+            logger.error("Id token validation error", e);
         } catch (ParseException e) {
            // throw new RuntimeException(e);
-            System.out.println("FOOOO!" + e);
+            logger.error("Parse error", e);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -117,7 +116,6 @@ public class OpenIdFederationServiceImpl implements OpenIdFederationService {
                 throw new IdTokenValidationException("ID token signature validation failed", signedJWT);
             }
             Object metadata = signedJWT.getJWTClaimsSet().getClaim("metadata");
-            System.out.println("TESTA " + metadata + metadata.getClass().getCanonicalName());
         } catch (ParseException e) {
             throw new IdTokenValidationException("Unable to parse ID token", e, signedJWT);
         } catch (JOSEException e) {

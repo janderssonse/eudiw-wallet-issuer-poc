@@ -15,6 +15,7 @@ public class RequestLoggingConfig {
         filter.setIncludePayload(false);
         filter.setMaxPayloadLength(10000);
         filter.setIncludeHeaders(true);
+        filter.setIncludeClientInfo(true);
         return filter;
     }
 }
