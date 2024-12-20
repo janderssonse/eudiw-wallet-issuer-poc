@@ -22,6 +22,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -35,12 +38,16 @@ import org.springframework.security.oauth2.server.authorization.InMemoryOAuth2Au
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.authentication.*;
 import org.springframework.security.oauth2.server.authorization.token.*;
+import org.springframework.security.oauth2.server.authorization.web.OAuth2AuthorizationEndpointFilter;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.*;
+import org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import se.digg.eudiw.authentication.*;
+import se.digg.eudiw.authorization.OAuth2ParAuthorizationCodeRequestAuthenticationConverter;
 import se.digg.eudiw.authorization.PreAuthCodeGrantAuthenticationConverter;
+import se.digg.eudiw.authorization.ParRequestFilter;
 import se.digg.eudiw.authorization.PreAuthCodeGrantAuthenticationProvider;
 import se.digg.eudiw.context.EudiwSessionSecurityContextRepository;
 
@@ -72,6 +79,7 @@ import org.springframework.security.oauth2.server.authorization.settings.TokenSe
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.nimbusds.jose.jwk.source.JWKSource;
+import se.digg.eudiw.service.ParCacheService;
 
 @Configuration
 @EnableWebSecurity
@@ -91,18 +99,30 @@ public class OAuth2ServerConfig {
   @Autowired
   ApplicationContext applicationContext;
 
-
+  @Bean
+  @Order(1)
+  public SecurityFilterChain foo(HttpSecurity http) throws Exception {
+    http
+            .securityMatcher("/oauth2/par")
+            .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+                    .requestMatchers(HttpMethod.POST, "/oauth2/par").permitAll()
+            )
+            .csrf(AbstractHttpConfigurer::disable);
+    return http.build();
+  }
 
   @Bean
   @Order(2)
-  public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, @Autowired RegisteredClientRepository registeredClientRepository, @Autowired AuthenticationManager authenticationManager, @Autowired OAuth2AuthorizationService authorizationService, @Autowired OAuth2TokenGenerator<?> tokenGenerator) throws Exception {
+  public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, @Autowired RegisteredClientRepository registeredClientRepository, @Autowired AuthenticationManager authenticationManager, @Autowired OAuth2AuthorizationService authorizationService, @Autowired OAuth2TokenGenerator<?> tokenGenerator, @Autowired ParCacheService parCacheService) throws Exception {
     OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
             OAuth2AuthorizationServerConfigurer.authorizationServer();
 
     http
             .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
+            //.addFilterBefore(new ParRequestFilter(parCacheService), WebAsyncManagerIntegrationFilter.class)
             .authorizeHttpRequests( authorizeHttpRequests -> authorizeHttpRequests
                     .requestMatchers("/oauth2/token*").permitAll()
+                    //.requestMatchers("/oauth2/authorize*").permitAll()
                     .anyRequest().authenticated()
             )
             .with(authorizationServerConfigurer, (authorizationServer) ->
@@ -111,7 +131,14 @@ public class OAuth2ServerConfig {
                             .oidc(Customizer.withDefaults())	// Enable OpenID Connect 1.0
                             .authorizationEndpoint(authorizationEndpoint ->
                                     authorizationEndpoint
+                                            .authorizationRequestConverter(new OAuth2ParAuthorizationCodeRequestAuthenticationConverter(parCacheService))
                                             .authenticationProvider(authProvider)
+                                            //.authorizationRequestConverters(converters -> converters.addFirst(new ParAuthenticationConverter(parCacheService)))
+                                            .errorResponseHandler((req, res, error) -> {
+                                              System.out.println("HJKSHKHDJHSAKDHKSHDJKHAJDHAKSHAKHDKAHSDJ******");
+                                              res.getWriter().write("FOOBAR!");
+                                              res.setStatus(HttpStatus.OK.value()); 
+                                            })
                             )
                             .tokenEndpoint(tokenEndpoint -> tokenEndpoint
 
@@ -119,6 +146,7 @@ public class OAuth2ServerConfig {
                                     .authenticationProvider(new PreAuthCodeGrantAuthenticationProvider(authorizationService, tokenGenerator, registeredClientRepository)))
 
             )
+            .csrf(AbstractHttpConfigurer::disable)
             .exceptionHandling(exception -> exception
                     // Redirect to the login page when not authenticated
                     // authorization endpoint
@@ -357,4 +385,6 @@ public class OAuth2ServerConfig {
           (ApplicationEventPublisher applicationEventPublisher) {
     return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
   }
+
+
 }

@@ -19,6 +19,14 @@ logging:
     whitelabel:
       enabled: false
 spring:
+  data:
+    redis:
+      host: "local.dev.swedenconnect.se"
+      port: 6379
+      database: 0
+      #username: "user"
+      #password: "secret"
+
   ssl:
     bundle:
       pem:
@@ -42,13 +50,18 @@ eudiw:
     subject: https://local.dev.swedenconnect.se:9090
     trustListTtlInSeconds: 60
 
+  valkey:
+    host: local.dev.swedenconnect.se
+    port: 6379
   issuerSignerKeyPemFile: "../eudiw-prototype/sc-environment/config/openid-fed/keystores/issuer-jwt-ec256-key-pair.pem"
   redirectUris:
     - "https://local.dev.swedenconnect.se:9091/callback-test-1-authorisation-flow"
     - "https://local.dev.swedenconnect.se:9091/callback-test-2-pre-authorisation-flow"
+    - "https://local.dev.swedenconnect.se:9091/callback-test-3-par"
     - "https://local.dev.swedenconnect.se:9091"
     - "https://local.dev.swedenconnect.se:9443/callback-test-1-authorisation-flow"
     - "https://local.dev.swedenconnect.se:9443/callback-test-2-pre-authorisation-flow"
+    - "https://local.dev.swedenconnect.se:9443/callback-test-3-par"
     - "https://local.dev.swedenconnect.se:9443"
   swedenconnect:
     base-url: https://local.dev.swedenconnect.se:9060/id-backend/auth

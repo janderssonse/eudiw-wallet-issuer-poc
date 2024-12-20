@@ -17,6 +17,9 @@ public class EudiwConfig {
     public record SwedenConnectConfiguration(String baseUrl, String client, String returnBaseUrl) {
     }
 
+    public record ValKeyConfig(String host, int port) {
+    }
+
     private String authHost;
 
     private String callbackUrl;
@@ -36,6 +39,8 @@ public class EudiwConfig {
     private OpenIdFederationConfiguration openidFederation;
 
     private SwedenConnectConfiguration swedenconnect;
+
+    private ValKeyConfig valkey;
 
     private String issuerSignerKeyPemFile;
 
@@ -126,6 +131,14 @@ public class EudiwConfig {
 
     public void setIssuerSignerKeyPemFile(String issuerSignerKeyPemFile) {
         this.issuerSignerKeyPemFile = issuerSignerKeyPemFile;
+    }
+
+    public ValKeyConfig getValkey() {
+        return valkey;
+    }
+
+    public void setValkey(ValKeyConfig valkey) {
+        this.valkey = valkey;
     }
 
     @Override
