@@ -13,13 +13,27 @@ java {
 		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
-
-sourceSets.main.java.srcDir "${buildDir}/generate-resources/src/main/java"
-
+sourceSets.main.java.srcDir "${buildDir}/generate-resources/"
 
 repositories {
 	mavenCentral()
 	mavenLocal()
+	 maven {
+        name = "diggsweden"
+        url = "https://maven.pkg.github.com/diggsweden/eudiw-wallet-metadata-lib-poc"
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+    maven {
+        name = "openid-federation"
+        url = "https://maven.pkg.github.com/danneleaf/openid-federation-base"
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 dependencies {
@@ -31,23 +45,19 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
-	// annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
-// https://mvnrepository.com/artifact/io.micronaut.serde/micronaut-serde-jackson
-	//runtimeOnly 'io.micronaut.serde:micronaut-serde-jackson:2.5.1'
 	implementation 'io.projectreactor:reactor-core:3.6.0'
 
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 	implementation 'commons-io:commons-io:2.18.0'
 	implementation 'com.nimbusds:oauth2-oidc-sdk:11.20.1'
 	implementation 'com.nimbusds:nimbus-jose-jwt:9.47'
-	//implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'com.google.zxing:core:3.5.3'
 	implementation 'com.google.zxing:javase:3.5.3'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.bouncycastle:bcpkix-jdk18on:1.79'
 	implementation 'org.bouncycastle:bcprov-jdk18on:1.79'
 	implementation 'jakarta.annotation:jakarta.annotation-api:3.0.0'
-	implementation 'se.digg.wallet:wallet-metadata:1.0.0-SNAPSHOT'
+  implementation 'se.digg.wallet:eudiw-wallet-metadata-lib-poc:1.0.0-SNAPSHOT'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
@@ -88,8 +98,9 @@ openApiGenerate {
 	configOptions.set([
 			library: 'resttemplate',
 			openApiNullable: 'false',
-			useJakartaEe: 'true'
+			useJakartaEe: 'true',
+			generateTests: 'false'
 	])
 
-	outputDir.set("${buildDir}/generate-resources/")
+    outputDir.set("${buildDir}/generate-resources/")
 }

@@ -28,9 +28,14 @@
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
         <repository>
-            <id>github</id>
+            <id>diggsweden</id>
             <name>GitHub Packages</name>
             <url>https://maven.pkg.github.com/diggsweden/eudiw-wallet-metadata-lib-poc</url>
+        </repository>
+         <repository>
+            <id>openid-federation</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/danneleaf/openid-federation-base</url>
         </repository>
     </repositories>
 
@@ -160,10 +165,59 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>3.6.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk18on</artifactId>
+            <version>1.79</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.79</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>3.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>7.9.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/endpoints-api-modified.yaml</inputSpec>
+                            <generatorName>java</generatorName>
+                            <configOptions>
+                                <library>resttemplate</library>
+                                <openApiNullable>false</openApiNullable>
+                                <useJakartaEe>true</useJakartaEe>
+                                <generateTests>false</generateTests>
+                            </configOptions>
+                            <packageName>se.digg.eudiw</packageName>
+                            <apiPackage>se.digg.eudiw.client</apiPackage>
+                            <modelPackage>se.digg.eudiw.model</modelPackage>
+                            <output>${project.build.directory}/generated-sources/openapi</output>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

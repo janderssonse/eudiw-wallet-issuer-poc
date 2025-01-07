@@ -69,7 +69,7 @@ public class MetadataController {
                         .scope("VerifiablePortableDocumentA1")
                         .cryptographicBindingMethodsSupported(List.of("jwk"))
                         .credentialSigningAlgValuesSupported(List.of("ES256"))
-                        .proofType("jwt", new SdJwtCredentialConfiguration.ProofType(List.of("ES256")))
+                        .proofType("jwt", ProofTypeWrapper.createProofType(List.of("ES256")))                        
                         .display(List.of(
                                 Display.builder()
                                         .name("DIGG PID Issuer")
@@ -160,4 +160,9 @@ public class MetadataController {
             return ResponseEntity.internalServerError().body("Could not create entity statement");
         }
     }
+    private static class ProofTypeWrapper extends AbstractCredentialConfiguration {
+        public static ProofType createProofType(List<String> algValues) {
+                return new ProofType(algValues);
+        }
+        }
 }
