@@ -2,10 +2,10 @@ server:
   port: 9090
   ssl:
     enabled: true
-    key-store-type: JKS
-    key-store: "file:../eudiw-prototype/sc-environment/config/common/tls.jks"
-    key-store-password: secret
-    key-alias: tls
+    key-store-type: PKCS12
+    key-store: "file:bogusStore.p12"
+    key-store-password: mypass
+    key-alias: boguscert
 
 logging:
   level:
@@ -18,6 +18,7 @@ logging:
   error:
     whitelabel:
       enabled: false
+
 spring:
   data:
     redis:
@@ -26,7 +27,6 @@ spring:
       database: 0
       #username: "user"
       #password: "secret"
-
   ssl:
     bundle:
       pem:
@@ -34,7 +34,7 @@ spring:
           truststore:
             # certificate path works in local sc-environment if the repos are located side by side
             # otherwise: set the filepath with SPRING_SSL_BUNDLE_PEM_REST_TRUSTSTORE_CERTIFICATE environment variable
-            certificate: "file:../eudiw-prototype/sc-environment/config/common/tls.crt"
+            certificate: "classpath:dev/tokenSigner.crt"
 
 eudiw:
   issuer: https://local.dev.swedenconnect.se:9090
@@ -44,16 +44,15 @@ eudiw:
   expHours: 24
   clientId: eudiw-client
   openidFederation:
-    baseUrl:  https://local.dev.swedenconnect.se:9040/oidfed
+    baseUrl: https://local.dev.swedenconnect.se:9040/oidfed
     trustMarkId: https://local.dev.swedenconnect.se/trust-mark-id/pid-issuer
     walletProviderAnchor: https://local.dev.swedenconnect.se:9040/oidfed/wallet-provider
     subject: https://local.dev.swedenconnect.se:9090
     trustListTtlInSeconds: 60
-
   valkey:
     host: local.dev.swedenconnect.se
     port: 6379
-  issuerSignerKeyPemFile: "../eudiw-prototype/sc-environment/config/openid-fed/keystores/issuer-jwt-ec256-key-pair.pem"
+  issuerSignerKeyPemFile: classpath:jwt-ec256-private.pem
   redirectUris:
     - "https://local.dev.swedenconnect.se:9091/callback-test-1-authorisation-flow"
     - "https://local.dev.swedenconnect.se:9091/callback-test-2-pre-authorisation-flow"
@@ -64,13 +63,13 @@ eudiw:
     - "https://local.dev.swedenconnect.se:9443/callback-test-3-par"
     - "https://local.dev.swedenconnect.se:9443"
   swedenconnect:
-    base-url: https://local.dev.swedenconnect.se:9060/id-backend/auth
+    base-url: https://local.dev.swedenconnect.se:9060/id-backend
     client: wallet-dev
     return-base-url: https://local.dev.swedenconnect.se:9090/auth/return
 
   token-issuer-cert:
     - cert-location: classpath:dev/tokenSigner.crt
       kid: tokenSigner-1
-    - cert-location: file:../eudiw-prototype/sc-environment/config/openid-fed/keystores/wp-certificate.crt
+    - cert-location: classpath:dev/tokenSigner.crt
       kid: wp-1
 

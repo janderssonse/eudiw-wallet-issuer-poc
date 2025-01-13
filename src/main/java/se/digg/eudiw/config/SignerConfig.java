@@ -10,6 +10,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import se.oidc.oidfed.base.security.JWTSigningCredential;
 
@@ -23,6 +25,7 @@ import java.security.interfaces.ECPublicKey;
 @Component
 public class SignerConfig {
 
+private ResourceLoader resourceLoader;
     Logger logger = LoggerFactory.getLogger(SignerConfig.class);
 
     private final JWSSigner jwsSigner;
@@ -34,13 +37,16 @@ public class SignerConfig {
 
     private final JWK jwk;
 
-    public SignerConfig(@Autowired EudiwConfig eudiwConfig) {
+    public SignerConfig(@Autowired EudiwConfig eudiwConfig, @Autowired ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
         try {
             // Load BouncyCastle as JCA provider
             Security.addProvider(new BouncyCastleProvider());
 
-            // Parse the EC key file
-            String pemKey = new String(Files.readAllBytes(Paths.get(eudiwConfig.getIssuerSignerKeyPemFile())));
+
+// Then in your method:
+Resource resource = resourceLoader.getResource(eudiwConfig.getIssuerSignerKeyPemFile());
+String pemKey = new String(resource.getInputStream().readAllBytes());           // Parse the EC key file
             JWK parsedJwk = JWK.parseFromPEMEncodedObjects(pemKey);
             ECKey ecKey = parsedJwk.toECKey();
             ECPrivateKey privateKey = ecKey.toECPrivateKey();
