@@ -56,9 +56,6 @@ name: Maven Test
 
 on: [workflow_call]  # yamllint disable-line rule:truthy
 
-permissions:
-  contents: read
-
 jobs:
   test:
     name: Test
@@ -68,6 +65,13 @@ jobs:
         java-version: ['21'] 
         os: [ubuntu-latest]
 
+    env: 
+      MAVEN_CLI_OPTS: "--batch-mode --no-transfer-progress --errors --fail-at-end -Dstyle.color=always -DinstallAtEnd=true -DdeployAtEnd=true"
+    
+    permissions:
+      contents: read
+      packages: read
+    
     steps:
       - name: Harden GitHub runner
         uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
@@ -85,8 +89,11 @@ jobs:
           cache: 'maven'  # Enables Maven caching
 
       - name: Run tests
+        env: 
+          GITHUB_ACTOR: ${{ github.actor }}
+          PACKAGE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mvn clean test
+          mvn $MAVEN_CLI_OPTS -s development/maven-gh-settings.xml test
 
       # Optional: Publish test results
       # - name: Publish Test Results

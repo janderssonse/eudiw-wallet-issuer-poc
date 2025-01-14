@@ -53,7 +53,7 @@ eudiw:
   valkey:
     host: local.dev.swedenconnect.se
     port: 6379
-  issuerSignerKeyPemFile: "../eudiw-prototype/sc-environment/config/openid-fed/keystores/issuer-jwt-ec256-key-pair.pem"
+  issuerSignerKeyPemFile: "file:../eudiw-prototype/sc-environment/config/openid-fed/keystores/issuer-jwt-ec256-key-pair.pem"
   redirectUris:
     - "https://local.dev.swedenconnect.se:9091/callback-test-1-authorisation-flow"
     - "https://local.dev.swedenconnect.se:9091/callback-test-2-pre-authorisation-flow"

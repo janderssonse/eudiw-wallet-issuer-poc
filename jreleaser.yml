@@ -1,0 +1,53 @@
+# Basic project metadata
+project:
+  name: eudiw-wallet-issuer-poc
+  description: Test and PoC only
+  license: EUPL-1.2 
+  copyright: 2025 Digg - The Agency for Digital Government
+  inceptionYear: 2025
+  authors:
+    - Digg - Agency for Digital Government
+  snapshot:
+    pattern: .*-SNAPSHOT
+    label: early-access
+    fullChangelog: true
+
+# GitHub release configuration
+release:
+  github:
+    owner: janderssonse
+    overwrite: true     # Allows updating existing releases
+    draft: true        # Creates as final release, not draft
+    sign: true          # Signs release assets
+    branch: main
+    changelog:
+      enabled: true
+      external: CHANGELOG.md
+
+checksum:
+  algorithms:
+    - SHA-256
+    - SHA-512
+
+
+# GPG signing configuration
+signing:
+  active: ALWAYS
+  armored: true
+
+# SBOM generation
+catalog:
+  sbom:
+    syft:
+      active: ALWAYS
+      formats: 
+        - CYCLONEDX_JSON  
+        - SPDX_JSON
+      pack:
+        enabled: true
+
+# Syft need to know what to sign
+distributions:
+  library:
+    artifacts:
+      - path: target/{{projectName}}-{{projectVersion}}.jar
