@@ -1,0 +1,70 @@
+# SPDX-FileCopyrightText: 2024 Digg - The Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+name: Version Bump
+
+on:
+  workflow_call:
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: read
+    
+    env:
+      MAVEN_CLI_OPTS: "--batch-mode --no-transfer-progress --errors --fail-at-end -Dstyle.color=always -s development/maven-gh-settings.xml"
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
+          passphrase: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true 
+
+      - name: Update POM version
+        env: 
+          GITHUB_ACTOR: ${{ github.actor }}
+          PACKAGE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Tag: ${GITHUB_REF_NAME}"
+          TAG="${GITHUB_REF_NAME#v}"
+          echo "Version: ${TAG}"
+          mvn $MAVEN_CLI_OPTS -s development/maven-gh-settings.xml versions:set -DnewVersion="${TAG}" -DgenerateBackupPoms=false -DskipTests
+       
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v3
+        with:
+          config: development/gitcliff-gh-keepachangelog.toml
+          args: --verbose
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Switch to main branch
+        run: |
+          git fetch origin main:main
+          git checkout main
+          git branch --set-upstream-to=origin/main main
+
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: |
+            chore(release): ${{ github.ref_name }}
+            
+            Skip CI as this is an automated release commit.
+            
+            [skip ci]
+          file_pattern: 'pom.xml CHANGELOG.md'
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_options: '--signoff'
+          branch: main
