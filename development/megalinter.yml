@@ -1,5 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Josef Andersson
-# SPDX-FileCopyrightText: Josef Andersson
+# SPDX-FileCopyrightText: Digg 
 #
 # SPDX-License-Identifier: CC0-1.0
 
@@ -35,7 +34,6 @@ ENABLE_LINTERS: [
     JAVA_PMD,
     MARKDOWN_MARKDOWNLINT,
     REPOSITORY_GITLEAKS,
-    REPOSITORY_SECRETLINT,
     XML_XMLLINT
     YAML_PRETTIER,
   ]
