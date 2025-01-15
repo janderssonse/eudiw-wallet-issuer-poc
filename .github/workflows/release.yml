@@ -30,17 +30,17 @@ jobs:
       - name: Import GPG key  # Added this step
         uses: crazy-max/ghaction-import-gpg@v6
         with:
-          gpg_private_key: ${{ secrets.GPG_SECRET_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          gpg_private_key: ${{ secrets.OSPO_BOT_GPG_PRIV }}
+          passphrase: ${{ secrets.OSPO_BOT_GPG_PASS }}
           git_user_signingkey: true
           git_commit_gpgsign: true 
 
       - name: Release with JReleaser
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
-          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
-          JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
-          JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.OSPO_BOT_GPG_PUB }}
+          JRELEASER_GPG_SECRET_KEY: ${{ secrets.OSPOP_BOT_GPG_PRIV }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.OSPO_BOT_PASSS }}
           GITHUB_ACTOR: ${{ github.actor }}
           PACKAGE_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
         run: mvn $MAVEN_CLI_OPTS -s development/maven-gh-settings.xml deploy jreleaser:full-release -DskipTests

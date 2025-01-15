@@ -20,15 +20,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Import GPG key
+        id: import-gpg
         uses: crazy-max/ghaction-import-gpg@v6
         with:
-          gpg_private_key: ${{ secrets.GPG_SECRET_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          gpg_private_key: ${{ secrets.OSPO_BOT_GPG_PRIV }}
+          passphrase: ${{ secrets.OSPO_BOT_GPG_PASS }}
           git_user_signingkey: true
           git_commit_gpgsign: true 
-
+          git_committer_name: ${{ steps.import-gpg.outputs.name }}
+          git_committer_email: ${{ steps.import-gpg.outputs.email }}
+          git_config_global: true
+          
       - name: Update POM version
         env: 
           GITHUB_ACTOR: ${{ github.actor }}
@@ -64,11 +68,11 @@ jobs:
             
             [skip ci]
           file_pattern: 'pom.xml CHANGELOG.md'
-          commit_user_name: "github-actions[bot]"
-          commit_user_email: "github-actions[bot]@users.noreply.github.com"
-          commit_options: '--signoff'
-          branch: main
-
+          commit_author: "${{ steps.import-gpg.outputs.name }} <${{ steps.import-gpg.outputs.email }}>"
+          commit_user_name: ${{ steps.import-gpg.outputs.name }}
+          commit_user_email: ${{ steps.import-gpg.outputs.email }}
+          commit_options: ' --signoff'
+          skip_fetch: true
           
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
