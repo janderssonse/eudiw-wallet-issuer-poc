@@ -42,7 +42,8 @@ eudiw:
   authHost: https://local.dev.swedenconnect.se:9090
   credentialHost: https://local.dev.swedenconnect.se:9090
   expHours: 24
-  clientId: eudiw-client
+  clientId: 1234567891
+  #eudiw-client
   openidFederation:
     baseUrl:  https://local.dev.swedenconnect.se:9040/oidfed
     trustMarkId: https://local.dev.swedenconnect.se/trust-mark-id/pid-issuer

@@ -193,173 +193,175 @@
   </dependencies>
 
   <build>
-    <plugins>
-      <!-- Core plugins -->
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration>
-          <finalName>eudiw-wallet-issuer-poc</finalName>
-          <layers>
-            <enabled>true</enabled>
-          </layers>
-          <excludes>
-            <exclude>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-            </exclude>
-          </excludes>
-        </configuration>
-      </plugin>
+      <plugins>
+          <!-- Core plugins -->
+          <plugin>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-maven-plugin</artifactId>
+              <configuration>
+                  <finalName>eudiw-wallet-issuer-poc</finalName>
+                  <layers>
+                      <enabled>true</enabled>
+                  </layers>
+                  <excludes>
+                      <exclude>
+                          <groupId>org.projectlombok</groupId>
+                          <artifactId>lombok</artifactId>
+                      </exclude>
+                  </excludes>
+              </configuration>
+          </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <release>${java.version}</release>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-              <version>${lombok.version}</version>
-            </path>
-          </annotationProcessorPaths>
-        </configuration>
-      </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <configuration>
+                  <release>${java.version}</release>
+                  <annotationProcessorPaths>
+                      <path>
+                          <groupId>org.projectlombok</groupId>
+                          <artifactId>lombok</artifactId>
+                          <version>${lombok.version}</version>
+                      </path>
+                  </annotationProcessorPaths>
+              </configuration>
+          </plugin>
 
-      <!-- Code generation -->
-      <plugin>
-        <groupId>org.openapitools</groupId>
-        <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>${openapi-generator.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <configuration>
-              <inputSpec>${project.basedir}/endpoints-api-modified.yaml</inputSpec>
-              <generatorName>java</generatorName>
-              <configOptions>
-                <library>resttemplate</library>
-                <openApiNullable>false</openApiNullable>
-                <useJakartaEe>true</useJakartaEe>
-                <generateTests>false</generateTests>
-              </configOptions>
-              <packageName>se.digg.eudiw</packageName>
-              <apiPackage>se.digg.eudiw.client</apiPackage>
-              <modelPackage>se.digg.eudiw.model</modelPackage>
-              <output>${project.build.directory}/generated-sources/openapi</output>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+          <!-- Code generation -->
+          <plugin>
+              <groupId>org.openapitools</groupId>
+              <artifactId>openapi-generator-maven-plugin</artifactId>
+              <version>${openapi-generator.version}</version>
+              <executions>
+                  <execution>
+                      <goals>
+                          <goal>generate</goal>
+                      </goals>
+                      <configuration>
+                          <inputSpec>${project.basedir}/endpoints-api-modified.yaml</inputSpec>
+                          <generatorName>java</generatorName>
+                          <configOptions>
+                              <library>resttemplate</library>
+                              <openApiNullable>false</openApiNullable>
+                              <useJakartaEe>true</useJakartaEe>
+                              <generateTests>false</generateTests>
+                          </configOptions>
+                          <generateApiTests>false</generateApiTests>
+                          <generateModelTests>false</generateModelTests>
+                          <packageName>se.digg.eudiw</packageName>
+                          <apiPackage>se.digg.eudiw.client</apiPackage>
+                          <modelPackage>se.digg.eudiw.model</modelPackage>
+                          <output>${project.build.directory}/generated-sources/openapi</output>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
 
-      <!-- Testing -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${maven-failsafe-plugin.version}</version>
-      </plugin>
+          <!-- Testing -->
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <version>${maven-surefire-plugin.version}</version>
+          </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-failsafe-plugin</artifactId>
+              <version>${maven-failsafe-plugin.version}</version>
+          </plugin>
 
-      <!-- Documentation -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${maven-javadoc-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+          <!-- Documentation -->
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-javadoc-plugin</artifactId>
+              <version>${maven-javadoc-plugin.version}</version>
+              <executions>
+                  <execution>
+                      <id>attach-javadocs</id>
+                      <goals>
+                          <goal>jar</goal>
+                      </goals>
+                  </execution>
+              </executions>
+          </plugin>
 
-      <!-- Source -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>${maven-source-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+          <!-- Source -->
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-source-plugin</artifactId>
+              <version>${maven-source-plugin.version}</version>
+              <executions>
+                  <execution>
+                      <id>attach-sources</id>
+                      <goals>
+                          <goal>jar</goal>
+                      </goals>
+                  </execution>
+              </executions>
+          </plugin>
 
-      <!-- Deployment -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>${maven-deploy-plugin.version}</version>
-        <configuration>
-          <altDeploymentRepository>local::file:./target/staging-deploy</altDeploymentRepository>
-          <skip>false</skip>
-        </configuration>
-      </plugin>
+          <!-- Deployment -->
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-deploy-plugin</artifactId>
+              <version>${maven-deploy-plugin.version}</version>
+              <configuration>
+                  <altDeploymentRepository>local::file:./target/staging-deploy</altDeploymentRepository>
+                  <skip>false</skip>
+              </configuration>
+          </plugin>
 
-      <!-- Release -->
-      <plugin>
-        <groupId>org.jreleaser</groupId>
-        <artifactId>jreleaser-maven-plugin</artifactId>
-        <version>${jreleaser-maven-plugin.version}</version>
-        <configuration>
-          <configFile>${project.basedir}/jreleaser.yml</configFile>
-        </configuration>
-      </plugin>
+          <!-- Release -->
+          <plugin>
+              <groupId>org.jreleaser</groupId>
+              <artifactId>jreleaser-maven-plugin</artifactId>
+              <version>${jreleaser-maven-plugin.version}</version>
+              <configuration>
+                  <configFile>${project.basedir}/jreleaser.yml</configFile>
+              </configuration>
+          </plugin>
 
-      <!-- Quality -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <version>${maven-enforcer-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>enforce-versions</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <!-- Require Maven version -->
-                <requireMavenVersion>
-                  <version>[3.8.0,)</version>
-                  <message>Maven 3.8.0 or higher is required</message>
-                </requireMavenVersion>
+          <!-- Quality -->
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-enforcer-plugin</artifactId>
+              <version>${maven-enforcer-plugin.version}</version>
+              <executions>
+                  <execution>
+                      <id>enforce-versions</id>
+                      <goals>
+                          <goal>enforce</goal>
+                      </goals>
+                      <configuration>
+                          <rules>
+                              <!-- Require Maven version -->
+                              <requireMavenVersion>
+                                  <version>[3.8.0,)</version>
+                                  <message>Maven 3.8.0 or higher is required</message>
+                              </requireMavenVersion>
 
-                <!-- Require Java version -->
-                <requireJavaVersion>
-                  <version>[21,)</version>
-                  <message>Java 21 or higher is required</message>
-                </requireJavaVersion>
+                              <!-- Require Java version -->
+                              <requireJavaVersion>
+                                  <version>[21,)</version>
+                                  <message>Java 21 or higher is required</message>
+                              </requireJavaVersion>
 
-                <!-- Ban duplicate dependencies -->
-                <banDuplicatePomDependencyVersions />
+                              <!-- Ban duplicate dependencies -->
+                              <banDuplicatePomDependencyVersions />
 
-                <!-- Require all dependencies to have versions -->
-                <requireUpperBoundDeps />
+                              <!-- Require all dependencies to have versions -->
+                              <requireUpperBoundDeps />
 
 
-                <!-- IMPORTANT: Enable and fixe: Enforce dependency convergence -->
-                <!-- <dependencyConvergence>
-                  <uniqueVersions>true</uniqueVersions>
-                </dependencyConvergence> -->
-              </rules>
-              <fail>true</fail>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
+                              <!-- IMPORTANT: Enable and fixe: Enforce dependency convergence -->
+                              <!-- <dependencyConvergence>
+                                <uniqueVersions>true</uniqueVersions>
+                              </dependencyConvergence> -->
+                          </rules>
+                          <fail>true</fail>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
+      </plugins>
   </build>
 </project>

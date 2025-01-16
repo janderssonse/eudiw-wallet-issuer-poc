@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.jwk.JWK;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +30,9 @@ import se.digg.wallet.metadata.WalletOAuthClientMetadata;
 
 @RestController
 public class CredentialController {
+
+
+	private static final Logger logger = LoggerFactory.getLogger(CredentialController.class);
 
 	private final EudiwConfig eudiwConfig;
 	private final SignerConfig signerConfig;
@@ -68,7 +74,8 @@ public class CredentialController {
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			if (authentication.getPrincipal() instanceof Jwt) {
 
-				WalletOAuthClientMetadata walletOAuthClientMetadata = openIdFederationService.resolveWallet("1234567891");
+				String clientId =  jwt.getClaim("clientId");
+				WalletOAuthClientMetadata walletOAuthClientMetadata = openIdFederationService.resolveWallet(clientId);
 				Optional<JWK> jwk;
 				if (walletOAuthClientMetadata != null) {
 					jwk = walletOAuthClientMetadata.getJwkSet().getKeys().stream().findFirst();
@@ -80,11 +87,17 @@ public class CredentialController {
 				// TODO - get PID data from ID token and authentic source (t.ex. skatteverket)
 				PidBuilder builder = new PidBuilder(eudiwConfig.getIssuer(), signerConfig)
                         .withExp(eudiwConfig.getExpHours())
-                        .withVcType("https://attestations.eudiw.se/se_pid")
-                        .addSelectiveDisclosure("given_name", "FOO" + jwt.getClaim("givenName"))
-                        .addSelectiveDisclosure("last_name", "FOO" + jwt.getClaim("surname"))
-						.addSelectiveDisclosure("birthdate", "FOO" + jwt.getClaim("birthDate"))
-                        .addSelectiveDisclosure("address", new Address("123 Main St", "Anytown", "Anystate", "US"));
+                        .withVcType("https://attestations.eudiw.se/se_pid");
+
+
+				if (!StringUtils.isBlank(jwt.getClaim("givenName")))
+					builder.addSelectiveDisclosure("given_name", jwt.getClaim("givenName"));
+				if (!StringUtils.isBlank(jwt.getClaim("surname")))
+					builder.addSelectiveDisclosure("last_name", jwt.getClaim("surname"));
+				if (!StringUtils.isBlank(jwt.getClaim("birthDate")))
+					builder.addSelectiveDisclosure("birthdate", jwt.getClaim("birthDate"));
+
+				builder.addSelectiveDisclosure("address", new Address("123 Main St", "Anytown", "Anystate", "US"));
 
 				jwk.ifPresent(value -> builder.withCnf(Map.of("jwk", value.toPublicJWK().toJSONObject())));
 

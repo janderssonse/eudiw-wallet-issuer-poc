@@ -1,53 +1,30 @@
 package se.digg.eudiw.config;
 
-import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.time.Duration;
-import java.util.List;
 import java.util.UUID;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.proc.SecurityContext;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.oauth2.core.*;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.authentication.*;
 import org.springframework.security.oauth2.server.authorization.token.*;
-import org.springframework.security.oauth2.server.authorization.web.OAuth2AuthorizationEndpointFilter;
-import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.*;
-import org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
-import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import se.digg.eudiw.authentication.*;
-import se.digg.eudiw.authorization.OAuth2ParAuthorizationCodeRequestAuthenticationConverter;
-import se.digg.eudiw.authorization.PreAuthCodeGrantAuthenticationConverter;
-import se.digg.eudiw.authorization.PreAuthCodeGrantAuthenticationProvider;
+import se.digg.eudiw.authorization.*;
 import se.digg.eudiw.context.EudiwSessionSecurityContextRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,36 +38,28 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
-import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
-import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat;
-import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.nimbusds.jose.jwk.source.JWKSource;
+import se.digg.eudiw.service.OpenIdFederationService;
 import se.digg.eudiw.service.ParCacheService;
 
 @Configuration
 @EnableWebSecurity
 public class OAuth2ServerConfig {
 
+
+  private static final Logger logger = LoggerFactory.getLogger(OAuth2ServerConfig.class);
+
   @Autowired
   private SwedenConnectAuthenticationProvider authProvider;
 
   @Autowired
   EudiwSessionSecurityContextRepository contextRepository;
-  //@Autowired
-  //private ClientRegistrationRepository clientRegistrationRepository;
 
   @Autowired
   private EudiwConfig config;
@@ -126,6 +95,7 @@ public class OAuth2ServerConfig {
             .with(authorizationServerConfigurer, (authorizationServer) ->
                     authorizationServer
                             .registeredClientRepository(registeredClientRepository)
+                            .tokenGenerator(tokenGenerator())
                             .oidc(Customizer.withDefaults())	// Enable OpenID Connect 1.0
                             .authorizationEndpoint(authorizationEndpoint ->
                                     authorizationEndpoint
@@ -133,7 +103,6 @@ public class OAuth2ServerConfig {
                                             .authenticationProvider(authProvider)
                                             //.authorizationRequestConverters(converters -> converters.addFirst(new ParAuthenticationConverter(parCacheService)))
                                             .errorResponseHandler((req, res, error) -> {
-                                              System.out.println("HJKSHKHDJHSAKDHKSHDJKHAJDHAKSHAKHDKAHSDJ******");
                                               res.getWriter().write("FOOBAR!");
                                               res.setStatus(HttpStatus.OK.value()); 
                                             })
@@ -223,10 +192,10 @@ public class OAuth2ServerConfig {
   }
 
   @Bean
-  public RegisteredClientRepository registeredClientRepository() {
+  public RegisteredClientRepository registeredClientRepository(OpenIdFederationService openIdFederationService) {
 
-
-
+    return new OidFederatedRegisteredClientRepository(config, openIdFederationService);
+/*
     RegisteredClient.Builder registeredClientBuilder = RegisteredClient.withId(UUID.randomUUID().toString())
       .clientId(config.getClientId())
       .clientAuthenticationMethods(s -> {
@@ -268,6 +237,8 @@ public class OAuth2ServerConfig {
             .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build());
     RegisteredClient registeredClient = registeredClientBuilder.build();
     return new InMemoryRegisteredClientRepository(registeredClient);
+
+ */
   }
 
   public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
@@ -290,49 +261,6 @@ public class OAuth2ServerConfig {
     JWKSet jwkSet = new JWKSet(rsaKey);
     return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
   }
-
-  @Bean
-  public OAuth2TokenCustomizer<JwtEncodingContext> accessTokenCustomizer() {
-      return (context) -> {
-        Authentication principal = context.getPrincipal();
-        if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
-          Set<String> authorities = principal.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-              .collect(Collectors.toSet());
-
-          context.getClaims().claim("authorities", authorities);
-
-          // TODO det mesta borde flyttas till idToken eller userinfo någonting
-          JwtClaimsSet.Builder claims = context.getClaims();
-          if (principal.getPrincipal() instanceof SwedenConnectPrincipal) {
-            SwedenConnectPrincipal p = (SwedenConnectPrincipal) principal.getPrincipal();
-            if (p.getSubjAttributes().getPersonalNumber() != null) claims.claim("personalNumber", p.getSubjAttributes().getPersonalNumber());
-            if (p.getSubjAttributes().getName() != null) claims.claim("name", p.getSubjAttributes().getName());
-            if (p.getSubjAttributes().getGivenName() != null) claims.claim("givenName", p.getSubjAttributes().getGivenName());
-            if (p.getSubjAttributes().getSurname() != null) claims.claim("surname", p.getSubjAttributes().getSurname());
-            if (p.getSubjAttributes().getCoordinationNumber() != null) claims.claim("coordinationNumber", p.getSubjAttributes().getCoordinationNumber());
-            if (p.getSubjAttributes().getPrid() != null) claims.claim("prid", p.getSubjAttributes().getPrid());
-            if (p.getSubjAttributes().getPridPersistence() != null) claims.claim("pridPersistence", p.getSubjAttributes().getPridPersistence());
-            if (p.getSubjAttributes().getEidasPersonIdentifier() != null) claims.claim("eidasPersonIdentifier", p.getSubjAttributes().getEidasPersonIdentifier());
-            if (p.getSubjAttributes().getPersonalNumberBinding() != null) claims.claim("personalNumberBinding", p.getSubjAttributes().getPersonalNumberBinding());
-            if (p.getSubjAttributes().getOrgNumber() != null) claims.claim("orgNumber", p.getSubjAttributes().getOrgNumber());
-            if (p.getSubjAttributes().getOrgAffiliation() != null) claims.claim("orgAffiliation", p.getSubjAttributes().getOrgAffiliation());
-            if (p.getSubjAttributes().getOrgName() != null) claims.claim("orgName", p.getSubjAttributes().getOrgName());
-            if (p.getSubjAttributes().getOrgUnit() != null) claims.claim("orgUnit", p.getSubjAttributes().getOrgUnit());
-            if (p.getSubjAttributes().getUserCertificate() != null) claims.claim("userCertificate", p.getSubjAttributes().getUserCertificate());
-            if (p.getSubjAttributes().getUserSignature() != null) claims.claim("userSignature", p.getSubjAttributes().getUserSignature());
-            if (p.getSubjAttributes().getDeviceIp() != null) claims.claim("deviceIp", p.getSubjAttributes().getDeviceIp());
-            if (p.getSubjAttributes().getAuthnEvidence() != null) claims.claim("authnEvidence", p.getSubjAttributes().getAuthnEvidence());
-            if (p.getSubjAttributes().getCountry() != null) claims.claim("country", p.getSubjAttributes().getCountry());
-            if (p.getSubjAttributes().getBirthName() != null) claims.claim("birthName", p.getSubjAttributes().getBirthName());
-            if (p.getSubjAttributes().getPlaceOfbirth() != null) claims.claim("placeOfbirth", p.getSubjAttributes().getPlaceOfbirth());
-            if (p.getSubjAttributes().getAge() != null) claims.claim("age", p.getSubjAttributes().getAge());
-            if (p.getSubjAttributes().getBirthDate() != null) claims.claim("birthDate", p.getSubjAttributes().getBirthDate());
-          }
-
-        }
-      };
-  }
-
 
   static class Jwks {
 
@@ -371,7 +299,7 @@ public class OAuth2ServerConfig {
   @Bean
   public OAuth2TokenGenerator<?> tokenGenerator() {
     JwtEncoder jwtEncoder = new NimbusJwtEncoder(jwkSource());
-    JwtGenerator jwtGenerator = new JwtGenerator(jwtEncoder);
+    EudiwJwtGenerator jwtGenerator = new EudiwJwtGenerator(jwtEncoder);
     OAuth2AccessTokenGenerator accessTokenGenerator = new OAuth2AccessTokenGenerator();
     OAuth2RefreshTokenGenerator refreshTokenGenerator = new OAuth2RefreshTokenGenerator();
     return new DelegatingOAuth2TokenGenerator(
