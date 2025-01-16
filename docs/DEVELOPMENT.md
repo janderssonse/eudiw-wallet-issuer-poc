@@ -43,7 +43,7 @@ docker-compose --profile ewc up
 ```
 The DemoTestsController can not run in compose.
 
-## CI Build
+## Build
 
 Currently, a few of the projects mvn package deps is hosted on GitHub.
 GitHub's mvn repo needs an access token even on public packages.
